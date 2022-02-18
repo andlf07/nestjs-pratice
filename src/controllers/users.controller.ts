@@ -6,23 +6,25 @@ import {
   Put,
   Param,
   Delete,
-  HttpCode,
-  HttpStatus,
-  Res,
-  Req,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UsersService } from '../services/users.service';
 
-interface CreateUserPayload {
+export interface ReturnJSON {
+  message: string;
+  code: number;
+}
+
+export interface CreateUserPayload {
   name: string;
   email: string;
   password: string;
 }
 
-interface ReturnUserJSON {
-  message: string;
-  code: number;
+interface ReturnUserJSON extends ReturnJSON {
   users?: User[];
   user?: User;
 }
@@ -31,65 +33,111 @@ interface ReturnUserJSON {
 export class UsersController {
   constructor(private usersService: UsersService) {}
   //Endpoint for get all users
+  @UseGuards(JwtAuthGuard)
   @Get()
-  async get(): Promise<ReturnUserJSON> {
-    const findAll = await this.usersService.findAll();
-    return {
-      code: 200,
-      users: findAll,
-      message: 'OK',
-    };
+  async get(@Request() req: any): Promise<ReturnUserJSON> {
+    console.log(req.user);
+    try {
+      const findAll = await this.usersService.findAll();
+      return {
+        code: 200,
+        message: 'OK',
+        users: findAll,
+      };
+    } catch (error) {
+      return {
+        code: 500,
+        message: 'INTERNAL_ERROR',
+      };
+    }
   }
   //Create users with the data from de payload
   @Post()
   async create(@Body() payload: CreateUserPayload): Promise<ReturnUserJSON> {
-    const createUser = await this.usersService.create(payload);
-    return {
-      user: createUser,
-      message: 'OK',
-      code: 201,
-    };
+    try {
+      const createUser = await this.usersService.create(payload);
+      return {
+        code: 201,
+        message: 'OK',
+        user: createUser,
+      };
+    } catch (error) {
+      return {
+        code: 500,
+        message: 'INTERNAL_ERROR',
+      };
+    }
   }
   //Update users with the data from de payload and the id of the users in params
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   async update(
     @Param('id') id: number,
     @Body() payload: CreateUserPayload,
   ): Promise<ReturnUserJSON> {
-    const updateUser = await this.usersService.update({
-      where: { id: Number(id) },
-      data: payload,
-    });
-    return {
-      message: 'UPDATE',
-      user: updateUser,
-      code: 200,
-    };
-  }
-  //Delete users id in params
-  @Delete(':id')
-  async delete(@Param('id') id: number): Promise<ReturnUserJSON> {
-    await this.usersService.delete({ id: Number(id) });
-    return {
-      message: 'DELETE',
-      code: 200,
-    };
-  }
-  //Get one single users
-  @Get(':id')
-  async getOne(@Param('id') id: number): Promise<ReturnUserJSON> {
-    const getOne = await this.usersService.findOne({ id: Number(id) });
-
-    if (getOne === null) {
+    try {
+      const updateUser = await this.usersService.update({
+        where: { id: Number(id) },
+        data: payload,
+      });
+      if (updateUser === null) {
+        return {
+          code: 404,
+          message: 'NOTFOUND',
+        };
+      }
       return {
-        message: 'NOTFOUND',
-        code: 204,
+        code: 200,
+        message: 'UPDATE',
+        user: updateUser,
+      };
+    } catch (error) {
+      return {
+        code: 500,
+        message: 'INTERNAL_ERROR',
       };
     }
-    return {
-      message: 'OK',
-      code: 200,
-      user: getOne,
-    };
+  }
+  //Delete users id in params
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  async delete(@Param('id') id: number): Promise<ReturnUserJSON> {
+    try {
+      await this.usersService.delete({ id: Number(id) });
+      return {
+        code: 200,
+        message: 'DELETE',
+      };
+    } catch (error) {
+      return {
+        code: 500,
+        message: 'INTERNAL_ERROR',
+      };
+    }
+  }
+  //Get one single users
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  async getOne(@Param('id') id: number): Promise<ReturnUserJSON> {
+    try {
+      const getOne = await this.usersService.findOne({ id: Number(id) });
+
+      if (getOne === null) {
+        return {
+          code: 404,
+          message: 'NOTFOUND',
+        };
+      }
+      return {
+        code: 200,
+        message: 'OK',
+        user: getOne,
+      };
+    } catch (error) {
+      return {
+        code: 500,
+        message: 'INTERNAL_ERROR',
+      };
+    }
   }
 }

@@ -1,5 +1,30 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Post, UseGuards, Request, Body } from '@nestjs/common';
+import { AuthService } from '../services/auth.service';
 
-//In the decorator @Controller we can specify the main endpoint will use this controller
-@Controller('login')
-export class LoginController {}
+@Controller('auth/login')
+export class LoginController {
+  constructor(private authService: AuthService) {}
+  //With this decorator we protect our endpoints
+  // @UseGuards(LocalAuthGuard)
+  @Post()
+  async login(@Body() payload: any) {
+    try {
+      const loginUser = await this.authService.login(payload);
+      if (loginUser === null) {
+        return {
+          code: 200,
+          message: 'Wrong password or email',
+        };
+      }
+      return {
+        code: 200,
+        access_token: loginUser,
+      };
+    } catch (error) {
+      return {
+        code: 500,
+        message: 'INTERNAL_ERROR',
+      };
+    }
+  }
+}

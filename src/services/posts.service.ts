@@ -1,41 +1,81 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, Post } from '@prisma/client';
+import { Prisma, Posts, User } from '@prisma/client';
 import { PrismaService } from './prisma.service';
 
 @Injectable()
 export class PostsService {
   constructor(private prisma: PrismaService) {}
-  async findOne(post_id: Prisma.PostWhereUniqueInput): Promise<Post | null> {
-    const getPost = await this.prisma.post.findUnique({
-      where: post_id,
-    });
-    return getPost;
+  async filterAuthorWithPosts(
+    category?: string,
+    author?: Prisma.UserWhereInput,
+  ): Promise<object | null> {
+    try {
+      const userWithPosts = await this.prisma.posts.findFirst({
+        where: {
+          category: category,
+        },
+        include: {
+          author: true,
+        },
+      });
+      return userWithPosts;
+    } catch (error) {
+      console.log(error);
+    }
   }
-  async findAll(): Promise<Post[]> {
-    const getAll = await this.prisma.post.findMany();
-    return getAll;
+  async findOne(data: any): Promise<Posts | null> {
+    try {
+      const getPost = await this.prisma.posts.findFirst({
+        where: data,
+      });
+      return getPost;
+    } catch (error) {
+      throw new Error('Error on service');
+    }
   }
-  async create(data: Prisma.PostCreateInput): Promise<Post> {
-    const createPost = await this.prisma.post.create({
-      data,
-    });
-    return createPost;
+  async findAll(): Promise<Posts[]> {
+    try {
+      const getAll = await this.prisma.posts.findMany();
+      return getAll;
+    } catch (error) {
+      throw new Error('Error on service');
+    }
+  }
+  async create(data: Prisma.PostsCreateInput): Promise<Posts> {
+    try {
+      const createPost = await this.prisma.posts.create({
+        data,
+      });
+      return createPost;
+    } catch (error) {
+      console.log(error);
+      console.log(error);
+      throw new Error('Error on service');
+    }
   }
   async update(params: {
-    where: Prisma.PostWhereUniqueInput;
-    data: Prisma.PostUpdateInput;
-  }): Promise<Post> {
-    const { where, data } = params;
-    const updatePost = await this.prisma.post.update({
-      data,
-      where,
-    });
-    return updatePost;
+    where: Prisma.PostsWhereUniqueInput;
+    data: Prisma.PostsUpdateInput;
+  }): Promise<Posts> {
+    try {
+      const { where, data } = params;
+      const updatePost = await this.prisma.posts.update({
+        data,
+        where,
+      });
+      return updatePost;
+    } catch (error) {
+      throw new Error('Error on service');
+    }
   }
-  async delete(where: Prisma.PostWhereUniqueInput): Promise<Post> {
-    const deletePost = await this.prisma.post.delete({
-      where,
-    });
-    return deletePost;
+  async delete(where: Prisma.PostsWhereUniqueInput): Promise<Posts> {
+    try {
+      const deletePost = await this.prisma.posts.delete({
+        where,
+      });
+      return deletePost;
+    } catch (error) {
+      throw new Error('Error on service');
+    }
   }
 }
