@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  Request,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -35,8 +34,7 @@ export class UsersController {
   //Endpoint for get all users
   @UseGuards(JwtAuthGuard)
   @Get()
-  async get(@Request() req: any): Promise<ReturnUserJSON> {
-    console.log(req.user);
+  async get(): Promise<ReturnUserJSON> {
     try {
       const findAll = await this.usersService.findAll();
       return {

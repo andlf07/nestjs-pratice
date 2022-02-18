@@ -1,73 +1,123 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
-</p>
+## **NestJS API and Scrapper**
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This API was developed with this stack: Framework NestJS, Typescript and ORM Prisma.io with Postgres, and for the Scrapper I use puppeteer.
+Use authentication with JwtStrategy, generate a Bearer token, all the endpoints are protected with this strategy.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Download and run the project
 
-## Description
+    npm install
+    npm run start:dev
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+and you have to run `npx prisma migrate dev` for generate the table in db.
 
-## Installation
+## /users
 
-```bash
-$ npm install
-```
+    GET /users
 
-## Running the app
+This endpoints will return all the users in our DB with a response JSON will look like this:
 
-```bash
-# development
-$ npm run start
+    {
+    	code:  200,
+    	message:  'OK',
+    	users:  findAll,
+    };
 
-# watch mode
-$ npm run start:dev
+We can create new users with the POST method like this
 
-# production mode
-$ npm run start:prod
-```
+    POST /users
 
-## Test
+we must have to pass in the body JSON
 
-```bash
-# unit tests
-$ npm run test
+    {
+        "name":  "Verenice Miranda",
+        "email":  "verenice@gmail.com",
+        "password":  "123456"
+    }
 
-# e2e tests
-$ npm run test:e2e
+All the info above is fake. It will return the same `json + Id`
 
-# test coverage
-$ npm run test:cov
-```
+If we want to make a update in our users we use the `PUT`, like the `POST`the same popertys , and pass the `id` from the user
 
-## Support
+    PUT /users/:id
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Like the `PUT` method the `DELETE`is the same way, just we dont have to pass a body `JSON`, just the `Id` in the params
 
-## Stay in touch
+To get one users we can use `GET /users/:id`
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## /posts
 
-## License
+if we want to search in our Posts tables with a category we can use this endpoints and will return all the Posts with the category
 
-Nest is [MIT licensed](LICENSE).
+    GET /api/articles/:category
+
+return this object:
+
+    "code":  200,
+    "message":  "OK",
+    "post":  {
+    		"id":  13,
+    		"authorId":  2,
+    		"title":  "5 trends in logistics for 2022",
+    		"published_at":  "December 15, 2021",
+    		"source_link":  "https://cargofive.com/5-trends-in-logistics-for-2022/"
+    		"category":  "innovation",
+    		"body_description":  "These last few years have been challenging for the logistics sector and the supply chain. Now, more than ever, freight forwarders must be aware of new trends to add more value to their efforts and stay one step ahead of their competition. So what can we expect for the upcoming year? The trends in logistics for this next year…",
+    		"author":  {
+    					"id":  2,
+    					"name":  "Verenice Miranda",
+    					"email":  "verenice@gmail.com",
+    					"password":  "123456"
+    		}
+    	}
+    }
+
+And of course we have to handle the info returned of the users
+
+Create a posts we have the endpoints
+
+    POST api/articles
+
+receive this `JSON`, with real information
+
+    {
+        "title":  "Why we need to work",
+        "body_description":  "I want to get the job",
+        "category":  "JOS",
+        "source_link":  "linkkkkkkkkkkkk",
+        "published_at":  "2020-03-19T14:21:00+02:00",
+        "authorId":  2
+    }
+
+It will return the same `JSON + ID`
+
+Like the `POST` method with `PUT` we must have to send a data like before, but in this case the `id` of the article
+
+    PUT api/articles/:id
+
+And for `GET`just `ONE` or `DELETE` we use the same endpoints before but with the method `GET` or `DELETE`
+To get `POSTS` by `author` we use:
+
+    GET api/articles/:author
+
+It will return a `JSON` with the satus code, the info of the users and all his posts
+
+## Scraper
+
+We use puppeter for scraping, the endpoints we will use for scraper the page is:
+
+    GET /scrapper
+
+After scraping the page we handle the information and save on db, every article have an author and we search in our table to rolate the `articles` with de `user`
+
+## Login
+
+For authenticate the use:
+
+    POST auth/login
+
+we must have to pass in body `JSON` the `email` and `password`it will return:
+
+    {
+    	"code":  200,
+    	"access_token":  "token"
+    }

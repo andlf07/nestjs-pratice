@@ -31,7 +31,10 @@ interface ReturnPostsJSON extends ReturnJSON {
 //In the decorator @Controller we can specify the main endpoint will use this controller
 @Controller('api/articles')
 export class PostsController {
-  constructor(private postsService: PostsService) {}
+  constructor(
+    private postsService: PostsService,
+    private userService: UsersService,
+  ) {}
   //Get all posts
   @UseGuards(JwtAuthGuard)
   @Get(':category')
@@ -50,6 +53,29 @@ export class PostsController {
         code: 200,
         message: 'OK',
         post: getByCategory,
+      };
+    } catch (error) {
+      return {
+        code: 500,
+        message: 'INTERNAL_ERROR',
+      };
+    }
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('/author/:author')
+  async getByAuthor(@Param('author') author: string) {
+    try {
+      const getByCategory = await this.userService.findOne({ name: author });
+      if (getByCategory === null) {
+        return {
+          code: 404,
+          message: 'NOTFOUND',
+        };
+      }
+      return {
+        code: 200,
+        message: 'OK',
+        byAuthor: getByCategory,
       };
     } catch (error) {
       return {

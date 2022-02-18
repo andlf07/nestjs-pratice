@@ -18,6 +18,7 @@ export class UsersService {
       });
       return getUser;
     } catch (error) {
+      console.log(error);
       throw new Error('Error on the service');
     }
   }
